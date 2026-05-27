@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brê | Brechós de Salto (SP)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+      background: #f0f2f5;
+    }
+
+    /* ========== TOPO (barra verde superior) ========== */
+    .ret_topo {
+      background-color: #1a4d3e;
+      padding: 8px 0;
+      text-align: center;
+    }
+
+    .ret_topo__slogan {
+      color: #f5e6d3;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    /* ========== CABEÇALHO ========== */
+    .cabecalho {
+      background: #fff;
+    }
+
+    .img_topo img {
+      width: 100%;
+      display: block;
+    }
+
+    .navegacao {
+      background-color: #2a5f4c;
+      padding: 12px 0;
+    }
+
+    .ret_projeto-porcue-contato {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .aba {
+      position: relative;
+    }
+
+    .retangulo_aba {
+      display: none;
+    }
+
+    .aba__link {
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 8px 16px;
+      transition: all 0.3s ease;
+    }
+
+    .aba__link:hover {
+      background-color: #1a4d3e;
+      border-radius: 20px;
+    }
+
+    /* ========== CONTEÚDO PRINCIPAL ========== */
+    .conteudo-principal {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    /* ========== DESTAQUES DA SEMANA ========== */
+    .grade_destaques-semana {
+      padding: 60px 40px 40px;
+    }
+
+    .destaques-semana__titulo {
+      font-size: 2rem;
+      color: #2a5f4c;
+      text-align: center;
+      margin-bottom: 40px;
+      font-weight: 800;
+    }
+
+    .destaques-semana__grid {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .destaque-card {
+      background: #f9f5f0;
+      border-radius: 20px;
+      overflow: hidden;
+      width: 200px;
+      text-align: center;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .destaque-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .destaque-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .destaque-card__nome {
+      padding: 15px;
+      font-weight: 700;
+      color: #1a4d3e;
+    }
+
+    /* ========== SEÇÃO MAPA ========== */
+    .secao-mapa-interativo {
+      padding: 40px 40px 60px;
+      background: #e8f0ed;
+    }
+
+    .secao-mapa-interativo__titulo {
+      font-size: 2rem;
+      color: #2a5f4c;
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 800;
+    }
+
+    .map-section {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    #map {
+      height: 500px;
+      width: 65%;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+
+    #info {
+      width: 32%;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      max-height: 500px;
+    }
+
+    #busca {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 25px;
+      border: 1px solid #ddd;
+      font-family: "Montserrat", sans-serif;
+      font-size: 0.9rem;
+    }
+
+    #resultados {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .resultado {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 8px;
+    }
+
+    .resultado:hover {
+      background: #f0f2f5;
+    }
+
+    #detalhes {
+      border-top: 2px solid #2a5f4c;
+      padding-top: 15px;
+    }
+
+    #detalhes h3 {
+      color: #2a5f4c;
+      margin-bottom: 12px;
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    /* ========== IMPACTOS ========== */
+    .impactos {
+      background: #2a5f4c;
+      padding: 60px 40px;
+      color: white;
+    }
+
+    .impactos__cabecalho {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .impactos__supertitulo {
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 2px;
+    }
+
+    .impactos__titulo {
+      font-size: 2rem;
+      margin-top: 10px;
+    }
+
+    .impactos__bloco {
+      display: flex;
+      gap: 50px;
+      align-items: center;
+      margin-bottom: 60px;
+      flex-wrap: wrap;
+    }
+
+    .impactos__texto-esquerda, .impactos__texto-direita {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .impactos__texto-esquerda p, .impactos__texto-direita p {
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .impactos__imagem-direita, .impactos__imagem-esquerda {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .impactos__imagem-direita img, .impactos__imagem-esquerda img {
+      width: 100%;
+      border-radius: 20px;
+    }
+
+    /* ========== TRABALHO ESCRAVO ========== */
+    .trabalho-escravo {
+      position: relative;
+      padding: 60px 40px;
+      background: #f9f5f0;
+    }
+
+    .img_fundo-trab-anal-esc {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .img_fundo-trab-anal-esc img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .trabalho-escravo__conteudo {
+      display: flex;
+      gap: 50px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      flex-wrap: wrap;
+    }
+
+    .trabalho-escravo__texto {
+      flex: 1;
+    }
+
+    .trabalho-escravo__titulo {
+      color: #2a5f4c;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+
+    .trabalho-escravo__texto p {
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .trabalho-escravo__imagem {
+      flex: 1;
+    }
+
+    .trabalho-escravo__imagem img {
+      width: 100%;
+      border-radius: 20px;
+    }
+
+    /* ========== SOBRE O PROJETO ========== */
+    .sobre-o-projeto {
+      padding: 60px 40px;
+      background: white;
+    }
+
+    .sobre-o-projeto__titulo {
+      font-size: 2rem;
+      color: #2a5f4c;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .rectangle-4 {
+      width: 80px;
+      height: 4px;
+      background: #c7a17a;
+      margin: 0 auto 40px;
+    }
+
+    .sobre-o-projeto__conteudo {
+      display: flex;
+      gap: 50px;
+      flex-wrap: wrap;
+    }
+
+    .sobre-o-projeto__galeria {
+      flex: 1;
+      text-align: center;
+    }
+
+    .img_nos img {
+      width: 100%;
+      max-width: 350px;
+      border-radius: 20px;
+    }
+
+    .sobre-o-projeto__equipe {
+      margin-top: 25px;
+      font-size: 1rem;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .sobre-o-projeto__info {
+      flex: 1;
+    }
+
+    .sobre-o-projeto__texto p {
+      margin-bottom: 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* ========== RODAPÉ ========== */
+    .rodape {
+      background: #1a4d3e;
+      color: #f5e6d3;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .rodape__credito {
+      margin-bottom: 15px;
+      font-size: 0.8rem;
+    }
+
+    .rodape__nav {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+
+    .rodape__link {
+      color: #f5e6d3;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+
+    .rodape__link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .map-section {
+        flex-direction: column;
+      }
+      #map, #info {
+        width: 100%;
+      }
+      .destaques-semana__grid {
+        gap: 15px;
+      }
+      .destaque-card {
+        width: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== TOPO (barra verde superior) ========== -->
+  <div class="ret_topo">
+    <p class="ret_topo__slogan">ENCONTRE A SUSTENTABILIDADE QUE A SUA MODA PRECISA</p>
+  </div>
+
+  <!-- ========== CABEÇALHO / HERO ========== -->
+  <header class="cabecalho" id="inicio">
+
+    <div class="img_topo">
+      <img src="imagens/imgTopoCerta.png" alt="Banner principal do site Brê" />
+    </div>
+
+    <nav class="navegacao" aria-label="Menu principal">
+      <div class="ret_projeto-porcue-contato">
+        <div class="aba aba--projeto">
+          <a href="#projeto" class="aba__link projeto">PROJETO</a>
+        </div>
+        <div class="aba aba--porcue">
+          <a href="#impactos" class="aba__link o-porcue">O PORQUÊ</a>
+        </div>
+        <div class="aba aba--contato">
+          <a href="#contato" class="aba__link contato">CONTATO</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ========== CONTEÚDO PRINCIPAL ========== -->
+  <main class="conteudo-principal">
+
+    <!-- ========== SEÇÃO: DESTAQUES DA SEMANA ========== -->
+    <section class="grade_destaques-semana destaques-semana" id="destaques">
+      <h2 class="destaques-semana__titulo" id="titulo-destaques">Destaques da semana</h2>
+      <div class="destaques-semana__grid">
+        <article class="destaque-card dest_1">
+          <img src="imagens/brecho_amorP.png.webp" alt="Brechó Amor" />
+          <p class="destaque-card__nome">Brechó Amor</p>
+        </article>
+        <article class="destaque-card dest_2">
+          <img src="imagens/burguesinha.png.webp" alt="Burguesinha" />
+          <p class="destaque-card__nome">Burguesinha</p>
+        </article>
+        <article class="destaque-card ddest_3">
+          <img src="imagens/lugus.png.webp" alt="Lugus" />
+          <p class="destaque-card__nome">Lugus</p>
+        </article>
+        <article class="destaque-card dest_4">
+          <img src="imagens/helena_costa.png.webp" alt="Helena Costa" />
+          <p class="destaque-card__nome">Helena Costa</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO: MAPA INTERATIVO ========== -->
+    <section class="secao-mapa-interativo" id="mapa">
+      <h2 class="secao-mapa-interativo__titulo">📍 Brechós em Salto - Mapa Interativo</h2>
+      
+      <div class="map-section">
+        <div id="map"></div>
+        <div id="info">
+          <input type="text" id="busca" placeholder="🔍 Buscar brechó...">
+          <div id="resultados"></div>
+          <div id="detalhes">
+            <p>📍 Clique em um ponto ou pesquise acima</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO: IMPACTOS (O PORQUÊ) ========== -->
+    <section class="impactos" id="impactos">
+      <header class="impactos__cabecalho">
+        <h2 class="impactos__supertitulo" id="titulo-impactos">Impactos além da moda:</h2>
+        <h3 class="impactos__titulo">Quais os impactos (in)visíveis da indústria da moda no planeta?</h3>
+      </header>
+
+      <div class="impactos__bloco impactos__bloco--1">
+        <div class="impactos__texto-esquerda">
+          <p>
+            Vivemos cercados por roupas. Em média, cada pessoa consome 20 novas peças por ano — mas você
+            já parou para pensar no caminho que uma simples camiseta percorre até chegar ao seu
+            guarda-roupa? E, mais importante: para onde ela vai depois que é descartada?
+          </p>
+          <p>
+            Os números assustam. De acordo com a Ellen MacArthur Foundation, a produção global de roupas
+            dobrou nos últimos 15 anos, enquanto o tempo de uso de cada peça caiu 36% no mesmo período.
+            Esse fenômeno tem nome: fast fashion — a moda rápida, descartável e de baixo custo que dita
+            as regras do setor e impõe um ritmo insustentável ao planeta.
+          </p>
+          <p>
+            A cadeia produtiva têxtil é uma das mais agressivas ao meio ambiente. Começa no cultivo do
+            algodão — monocultura que consome enormes quantidades de água e agrotóxicos, acelerando a
+            erosão do solo. Segue pelos processos de tingimento e estamparia, que despejam efluentes
+            químicos nos corpos d'água, muitas vezes sem o tratamento adequado.
+          </p>
+        </div>
+        <aside class="impactos__imagem-direita img_3">
+          <img src="imagens/moldura_jeans.png" alt="Impactos ambientais da indústria têxtil" />
+        </aside>
+      </div>
+
+      <div class="impactos__bloco impactos__bloco--2">
+        <aside class="impactos__imagem-esquerda img_1">
+          <img src="imagens/moldura_rosa.png" alt="Cemitério têxtil no Deserto do Atacama" />
+        </aside>
+        <div class="impactos__texto-direita">
+          <p>
+            A situação se agrava com o uso predominante de fibras sintéticas, como o poliéster. Além de
+            derivadas de petróleo, essas roupas liberam microplásticos a cada lavagem — partículas que
+            chegam aos oceanos, são ingeridas por animais marinhos e entram na cadeia alimentar humana.
+            Estima-se que 1,2 bilhão de toneladas de CO₂ sejam emitidas anualmente pela indústria da moda.
+          </p>
+          <p>
+            E o que acontece no fim da vida dessas roupas? Uma imagem dramática ilustra a resposta: o
+            Deserto do Atacama, no Chile, transformou-se em um imenso cemitério têxtil. Cerca de 60 mil
+            toneladas de roupas são enviadas para a região todos os anos. Mais da metade acaba em aterros
+            ou é incinerada a céu aberto, gerando fumaça tóxica e um passivo ambiental de enormes proporções.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO: TRABALHO ANÁLOGO À ESCRAVIDÃO ========== -->
+    <section class="trabalho-escravo" id="trabalho">
+      <div class="img_fundo-trab-anal-esc">
+        <img src="imagens/imgImp.png.jpg" alt="" role="presentation" />
+      </div>
+      <div class="trabalho-escravo__conteudo">
+        <div class="trabalho-escravo__texto">
+          <h2 class="trabalho-escravo__titulo" id="titulo-trabalho">
+            Trabalho análogo à escravidão na moda: um retrato silencioso do Brasil
+          </h2>
+          <p>
+            Entre 2010 e 2022, o Brasil registrou centenas de casos de trabalhadores submetidos a condições
+            análogas à escravidão — um número que, por si só, já seria alarmante, mas que representa apenas
+            a ponta de um iceberg muito mais profundo. Os dados oficiais revelam uma realidade dura: a maioria
+            dessas ocorrências se concentrou nas indústrias têxtil e de confecção, setores que movimentam
+            bilhões de reais por ano, mas que operam, em grande parte, às custas da dignidade humana.
+          </p>
+        </div>
+        <aside class="trabalho-escravo__imagem img_2">
+          <img src="imagens/moldura_verde.png" alt="Trabalho análogo à escravidão na indústria têxtil" />
+        </aside>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO: SOBRE O PROJETO ========== -->
+    <section class="sobre-o-projeto" id="projeto">
+      <h2 class="sobre-o-projeto__titulo" id="titulo-sobre">SOBRE O PROJETO</h2>
+      <div class="rectangle-4"></div>
+      <div class="sobre-o-projeto__conteudo">
+        <aside class="sobre-o-projeto__galeria">
+          <div class="img_nos">
+            <img src="imagens/nois.png" alt="Foto da equipe do projeto Brê" />
+          </div>
+          <h2 class="sobre-o-projeto__equipe">
+            Yasmin de Almeida <br /><br />
+            Luana Vitória Veroneze <br /><br />
+            Isabelly de Souza Luiz <br /><br />
+            Livia Ferreira <br /><br />
+            Esther Henrique Orlandeli
+          </h2>
+        </aside>
+        <div class="sobre-o-projeto__info">
+          <div class="sobre-o-projeto__texto">
+            <p>
+              A gente criou esse projeto pra facilitar a vida de quem ama garimpar e quer consumir de
+              forma mais consciente em Salto. Reunimos a localização dos brechós da cidade em um só
+              lugar, pra mostrar que dá sim pra se vestir bem, economizar e ainda ajudar o planeta.
+            </p>
+            <p>
+              A ideia surgiu porque sentimos falta disso por aqui. Os brechós existem, mas nem sempre
+              são fáceis de encontrar ou têm a visibilidade que merecem. Então pensamos: por que não
+              mudar isso?
+            </p>
+            <p>
+              Como desenvolvedoras (e frequentadoras de brechó), quisemos usar a tecnologia pra dar
+              destaque a esses espaços, apoiar o comércio local e incentivar uma moda mais sustentável
+              aqui em Salto. Também fomos incentivadas e apoiadas pelo IFSP campus Salto (instituto em
+              que estudamos), graças a matéria de Projeto Integrador.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== RODAPÉ ========== -->
+  <footer class="rodape" id="contato">
+    <div class="rodape__container">
+      <p class="rodape__credito">
+        &copy; 2025 Brê — Brechós de Salto (SP) &middot; Projeto Integrador &middot; IFSP Campus Salto
+      </p>
+      <nav class="rodape__nav" aria-label="Links do rodapé">
+        <a href="#inicio" class="rodape__link">Início</a>
+        <a href="#destaques" class="rodape__link">Destaques</a>
+        <a href="#impactos" class="rodape__link">O Porquê</a>
+        <a href="#projeto" class="rodape__link">Sobre o Projeto</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Inicializa o mapa
+    var map = L.map('map').setView([-23.2008, -47.2869], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    function normalizar(texto) {
+      return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    var locais = [
+      { nome:"Brechó Amor Perfeito", coords:[-23.20435,-47.29485], horario:"Seg a sex: 09h–18h30<br>Sáb: 09h–14h", endereco:"R. Rui Barbosa, 599 - Centro, Salto - SP, 13320-230", contato:"@brecho_amorperfeito_" },
+      { nome:"Lugu’s Brechó Chic", coords:[-23.20742,-47.29241], horario:"Seg a sex: 10h–12h / 13h30–17h30<br>Sáb: 10h–13h", endereco:"R. Prudente de Moraes, 153 - Centro, Salto - SP, 13320-160", contato:"@lugusbrechochic" },
+      { nome:"Brechó Helena Costa", coords:[-23.20405,-47.29673], horario:"Seg a sex: 09h30–18h30<br>Sáb: 09h–14h", endereco:"R. Joaquim Nabuco, 54 - Vila Teixeira, Salto - SP, 13320-370", contato:"(11) 95874-8716" },
+      { nome:"Brechó Três Irmãs", coords:[-23.18807,-47.27414], horario:"Seg a sáb: 10h–19h", endereco:"R. Rússia, 662 - Jardim Planalto, Salto - SP, 13322-230", contato:"@3brecho_irmas" },
+      { nome:"Brechó da Rê", coords:[-23.21251,-47.27302], horario:"Seg a sex: 09h–14h30<br>Sáb: 09h–14h<br>Dom: 09h–12h", endereco:"R. Botucatu, 197 - Jardim da Cidade, Salto - SP, 13323-080", contato:"@brechodaregina2" },
+      { nome:"Brechó Solidário Casa Naim", coords:[-23.20371,-47.28998], horario:"Seg a sex: 09h–18h<br>Sáb: 09h–13h", endereco:"R. Barão do Rio Branco, 376 - Centro, Salto - SP, 13320-270", contato:"@casanaimbazar" },
+      { nome:"Burguesinha Brechó Chic", coords:[-23.20680,-47.29408], horario:"Seg a sex: 09h–18h<br>Sáb: 09h–15h", endereco:"R. Monsenhor Couto, 386 - Centro, Salto - SP, 13320-210", contato:"(11) 99898-2582" },
+      { nome:"Closet das Meninas", coords:[-23.20531,-47.29359], horario:"Não informado", endereco:"R. Vinte e Três de Maio, 340 - Centro, Salto - SP, 13320-010", contato:"@closetdasmeninas.salto" },
+      { nome:"Zilda Brechó", coords:[-23.19202,-47.29399], horario:"Ter a sáb: 08h–17h", endereco:"R. Andiroba, 472 - Vila Flora, Salto - SP, 13321-120", contato:"(11) 99591-4082" },
+      { nome:"Madamme Brechó", coords:[-23.20061,-47.29908], horario:"Seg a sex: 09h–18h<br>Sáb: 09h–13h", endereco:"Av. Dom Pedro II, 1207 - Centro, Salto - SP, 13320-241", contato:"(11) 95629-1776" },
+      { nome:"Brechó Encontro Perfeito", coords:[-23.19256,-47.29071], horario:"Seg a sex: 09h–18h<br>Sáb: 09h–14h", endereco:"R. Emílio Ribas, 222 - Bela Vista, Salto - SP, 13321-360", contato:"(11) 96701-3365" },
+      { nome:"Brechó da Márcia", coords:[-23.20443,-47.29646], horario:"Ter a sex: 09h–18h<br>Sáb: 09h–13h", endereco:"R. Joaquim Nabuco, 21 - Centro, Salto - SP, 13328-300", contato:"@brechodamarcia" },
+      { nome:"Brechó Renascer", coords:[-23.19226,-47.30920], horario:"Seg a sex: 10h–18h<br>Sáb: 10h–14h", endereco:"R. América, 1251 - Jardim Celani, Salto - SP, 13326-100", contato:"(11) 95870-5308" },
+      { nome:"Brechó da Edna", coords:[-23.21771,-47.26425], horario:"Não informado", endereco:"R. Mal. Rondon - Jardim Santa Cruz, Salto - SP, 13323-540", contato:"@ednabrechoo" },
+      { nome:"Brechó da Leuda", coords:[-23.20017,-47.30171], horario:"Não informado", endereco:"R. Rui Barbosa, 1447 - Vila Teixeira, Salto - SP, 13320-360", contato:"-" }
+    ];
+
+    function mostrarInfo(local) {
+      document.getElementById("detalhes").innerHTML = `
+        <h3>${local.nome}</h3>
+        <div class="info-item"><strong>🕒 Horário:</strong> ${local.horario}</div>
+        <div class="info-item"><strong>📍 Endereço:</strong> ${local.endereco}</div>
+        <div class="info-item"><strong>📞 Contato:</strong> ${local.contato}</div>
+      `;
+    }
+
+    // Adiciona marcadores no mapa
+    locais.forEach(local => {
+      var marker = L.marker(local.coords).addTo(map);
+      marker.on('click', () => mostrarInfo(local));
+    });
+
+    // Busca ao digitar
+    function atualizarBusca() {
+      var termo = normalizar(document.getElementById("busca").value);
+      var resultadosDiv = document.getElementById("resultados");
+      resultadosDiv.innerHTML = "";
+      if (!termo) return;
+      var filtrados = locais.filter(l => normalizar(l.nome).includes(termo));
+      filtrados.forEach(local => {
+        var div = document.createElement("div");
+        div.className = "resultado";
+        div.innerText = local.nome;
+        div.onclick = () => {
+          map.setView(local.coords, 16);
+          mostrarInfo(local);
+        };
+        resultadosDiv.appendChild(div);
+      });
+    }
+
+    document.getElementById("busca").addEventListener("input", atualizarBusca);
+  </script>
+</body>
+</html>
